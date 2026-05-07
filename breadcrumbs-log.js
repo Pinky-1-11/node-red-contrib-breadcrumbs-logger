@@ -56,7 +56,7 @@ module.exports = function (RED) {
                 message:  message,
                 severity: severity,
                 source:   msg.source   || undefined,
-                hostname: msg.hostname || (node.configNode && node.configNode.hostname) || undefined,
+                hostname: msg.hostname || msg.host || (node.configNode && node.configNode.hostname) || undefined,
                 metadata: metadata
             };
 

@@ -1,0 +1,130 @@
+<!-- ═══════════════════════════════════════════════════════════════════════
+     breadcrumbs-config  –  Configuration node (API Token)
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<script type="text/javascript">
+    RED.nodes.registerType('breadcrumbs-config', {
+        category:  'config',
+        defaults: {
+            name: { value: '' }
+        },
+        credentials: {
+            token: { type: 'password' }
+        },
+        label: function () {
+            return this.name || 'Breadcrumbs API';
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="breadcrumbs-config">
+    <div class="form-row">
+        <label for="node-config-input-name">
+            <i class="fa fa-tag"></i> Name
+        </label>
+        <input type="text" id="node-config-input-name" placeholder="Breadcrumbs API">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-token">
+            <i class="fa fa-key"></i> API Token
+        </label>
+        <input type="password" id="node-config-input-token" placeholder="Bearer token">
+    </div>
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     breadcrumbs-log  –  Main logging node
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<script type="text/javascript">
+    RED.nodes.registerType('breadcrumbs-log', {
+        category:  'output',
+        color:     '#8dbbe6',
+        defaults: {
+            name:     { value: '' },
+            server:   { value: '', type: 'breadcrumbs-config', required: true },
+            severity: { value: 'info' }
+        },
+        inputs:  1,
+        outputs: 1,
+        icon:    'font-awesome/fa-map-marker',
+        label: function () {
+            return this.name || 'breadcrumbs';
+        },
+        paletteLabel: 'breadcrumbs',
+        labelStyle: function () {
+            return this.name ? 'node_label_italic' : '';
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="breadcrumbs-log">
+    <div class="form-row">
+        <label for="node-input-name">
+            <i class="fa fa-tag"></i> Name
+        </label>
+        <input type="text" id="node-input-name" placeholder="(optional)">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-server">
+            <i class="fa fa-plug"></i> Config
+        </label>
+        <input type="text" id="node-input-server">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-severity">
+            <i class="fa fa-exclamation-circle"></i> Severity
+        </label>
+        <select id="node-input-severity" style="width:70%">
+            <option value="debug">debug</option>
+            <option value="info">info</option>
+            <option value="warn">warn</option>
+            <option value="error">error</option>
+            <option value="critical">critical</option>
+        </select>
+    </div>
+
+    <div class="form-tips">
+        <b>Tip:</b> Set <code>msg.severity</code> at runtime to override the severity
+        configured here. <code>msg.payload</code> is used as the log message.
+    </div>
+</script>
+
+<script type="text/html" data-help-name="breadcrumbs-log">
+    <p>Sends a log entry to the <a href="https://breadcrumbs.rutta.net" target="_blank">Breadcrumbs API</a>.</p>
+
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string | object</span></dt>
+        <dd>The log message. Objects are serialised to JSON automatically.</dd>
+
+        <dt class="optional">severity <span class="property-type">string</span></dt>
+        <dd>Overrides the severity configured in the node editor.
+            Allowed values: <code>debug</code>, <code>info</code>,
+            <code>warn</code>, <code>error</code>, <code>critical</code>.</dd>
+
+        <dt class="optional">topic <span class="property-type">string</span></dt>
+        <dd>Optional topic / category forwarded to the API.</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string | object</span></dt>
+        <dd>The original payload is passed through unchanged on success.</dd>
+    </dl>
+
+    <h3>Details</h3>
+    <p>
+        The node requires a <b>Breadcrumbs Config</b> node that holds your
+        API token. The token is stored encrypted by Node-RED and never
+        appears in plain text in exported flows.
+    </p>
+    <p>
+        The node status indicator shows <b>sending…</b> while the request is
+        in flight, <b>success</b> (green) on a 2xx response, or
+        <b>error &lt;code&gt;</b> (red) otherwise.
+    </p>
+</script>

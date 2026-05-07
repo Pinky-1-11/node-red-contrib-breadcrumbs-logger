@@ -5,8 +5,8 @@ module.exports = function (RED) {
     // ── Config node ──────────────────────────────────────────────────────────
     function BreadcrumbsConfigNode(config) {
         RED.nodes.createNode(this, config);
-        this.name = config.name;
-        // credentials.token is injected by Node-RED from encrypted storage
+        this.name     = config.name;
+        this.hostname = config.hostname;
     }
 
     RED.nodes.registerType('breadcrumbs-config', BreadcrumbsConfigNode, {
@@ -44,24 +44,33 @@ module.exports = function (RED) {
                 ? msg.payload
                 : JSON.stringify(msg.payload);
 
-            const body = JSON.stringify({
-                message:   message,
-                severity:  severity,
-                timestamp: new Date().toISOString(),
-                topic:     msg.topic    || undefined,
-                host:      msg.host     || undefined,
-                source:    msg.source   || undefined
-            });
+            // msg.topic is not an API field — merge into metadata for backward compat
+            let metadata = (msg.metadata && typeof msg.metadata === 'object')
+                ? msg.metadata
+                : undefined;
+            if (msg.topic) {
+                metadata = Object.assign({ topic: msg.topic }, metadata || {});
+            }
+
+            const bodyObj = {
+                message:  message,
+                severity: severity,
+                source:   msg.source   || undefined,
+                hostname: msg.hostname || (node.configNode && node.configNode.hostname) || undefined,
+                metadata: metadata
+            };
+
+            const body = JSON.stringify(bodyObj);
 
             node.status({ fill: 'grey', shape: 'dot', text: 'sending…' });
 
             const options = {
                 hostname: 'breadcrumbs.rutta.net',
-                path:     '/public/api/v1/',
+                path:     '/api/v1/logs',
                 method:   'POST',
                 headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type':  'application/json',
+                    'Authorization':  'Bearer ' + token,
+                    'Content-Type':   'application/json',
                     'Content-Length': Buffer.byteLength(body)
                 }
             };

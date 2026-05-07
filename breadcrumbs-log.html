@@ -6,7 +6,8 @@
     RED.nodes.registerType('breadcrumbs-config', {
         category:  'config',
         defaults: {
-            name: { value: '' }
+            name:     { value: '' },
+            hostname: { value: '' }
         },
         credentials: {
             token: { type: 'password' }
@@ -29,6 +30,12 @@
             <i class="fa fa-key"></i> API Token
         </label>
         <input type="password" id="node-config-input-token" placeholder="Bearer token">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-hostname">
+            <i class="fa fa-server"></i> Hostname
+        </label>
+        <input type="text" id="node-config-input-hostname" placeholder="e.g. my-server (optional)">
     </div>
 </script>
 
@@ -81,15 +88,19 @@
         <select id="node-input-severity" style="width:70%">
             <option value="debug">debug</option>
             <option value="info">info</option>
-            <option value="warn">warn</option>
+            <option value="notice">notice</option>
+            <option value="warning">warning</option>
             <option value="error">error</option>
             <option value="critical">critical</option>
+            <option value="alert">alert</option>
+            <option value="emergency">emergency</option>
         </select>
     </div>
 
     <div class="form-tips">
-        <b>Tip:</b> Set <code>msg.severity</code> at runtime to override the severity
-        configured here. <code>msg.payload</code> is used as the log message.
+        <b>Tip:</b> Override at runtime via <code>msg.severity</code>, <code>msg.source</code>,
+        <code>msg.hostname</code>, or <code>msg.metadata</code> (object).
+        <code>msg.payload</code> is used as the log message.
     </div>
 </script>
 
@@ -103,11 +114,23 @@
 
         <dt class="optional">severity <span class="property-type">string</span></dt>
         <dd>Overrides the severity configured in the node editor.
-            Allowed values: <code>debug</code>, <code>info</code>,
-            <code>warn</code>, <code>error</code>, <code>critical</code>.</dd>
+            Allowed values: <code>debug</code>, <code>info</code>, <code>notice</code>,
+            <code>warning</code>, <code>error</code>, <code>critical</code>,
+            <code>alert</code>, <code>emergency</code>.</dd>
+
+        <dt class="optional">source <span class="property-type">string</span></dt>
+        <dd>Service or component identifier sent to the API.</dd>
+
+        <dt class="optional">hostname <span class="property-type">string</span></dt>
+        <dd>Sending server hostname. Falls back to the hostname configured in the
+            Breadcrumbs Config node.</dd>
+
+        <dt class="optional">metadata <span class="property-type">object</span></dt>
+        <dd>Arbitrary JSON object with additional data attached to the log entry.
+            If <code>msg.topic</code> is set it is merged into metadata automatically.</dd>
 
         <dt class="optional">topic <span class="property-type">string</span></dt>
-        <dd>Optional topic / category forwarded to the API.</dd>
+        <dd>Forwarded as <code>metadata.topic</code> for backward compatibility.</dd>
     </dl>
 
     <h3>Outputs</h3>
@@ -118,13 +141,12 @@
 
     <h3>Details</h3>
     <p>
-        The node requires a <b>Breadcrumbs Config</b> node that holds your
-        API token. The token is stored encrypted by Node-RED and never
-        appears in plain text in exported flows.
+        The node requires a <b>Breadcrumbs Config</b> node that holds your API token
+        and an optional default hostname. The token is stored encrypted by Node-RED.
     </p>
     <p>
-        The node status indicator shows <b>sending…</b> while the request is
-        in flight, <b>success</b> (green) on a 2xx response, or
-        <b>error &lt;code&gt;</b> (red) otherwise.
+        The node status shows <b>sending…</b> while the request is in flight,
+        <b>success</b> (green) on 2xx, or <b>error &lt;code&gt;</b> (red) on failure.
+        HTTP 429 means the rate limit (600 req/min) was exceeded.
     </p>
 </script>

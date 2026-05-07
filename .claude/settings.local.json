@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$j = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = $j.tool_input.file_path; if ($f -notlike '*package.json') { $raw = Get-Content 'package.json' -Raw; $m = [regex]::Match($raw, '\"version\": \"(\\d+)\\.(\\d+)\\.(\\d+)\"'); $newV = \"$($m.Groups[1].Value).$($m.Groups[2].Value).$([int]$m.Groups[3].Value+1)\"; $raw = $raw -replace '\"version\": \"\\d+\\.\\d+\\.\\d+\"', \"\\\"version\\\": \\\"$newV\\\"\"; [IO.File]::WriteAllText((Resolve-Path 'package.json').Path, $raw); git add 'package.json' 2>$null }; git add \"$f\" 2>$null; if (git status --porcelain 2>$null) { git commit -m \"auto: update $(Split-Path -Leaf $f)\" 2>$null; git push 2>$null }; exit 0",
+            "statusMessage": "Versioning, committing and pushing...",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -48,14 +48,16 @@ module.exports = function (RED) {
                 message:   message,
                 severity:  severity,
                 timestamp: new Date().toISOString(),
-                topic:     msg.topic || undefined
+                topic:     msg.topic    || undefined,
+                host:      msg.host     || undefined,
+                source:    msg.source   || undefined
             });
 
             node.status({ fill: 'grey', shape: 'dot', text: 'sending…' });
 
             const options = {
                 hostname: 'breadcrumbs.rutta.net',
-                path:     '/api/v1',
+                path:     '/public/api/v1/',
                 method:   'POST',
                 headers: {
                     'Authorization': 'Bearer ' + token,
